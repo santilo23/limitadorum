@@ -11,8 +11,8 @@
 	<groupId>ar.edu.um</groupId>
 	<artifactId>limitadorum</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name/>
-	<description/>
+	<name>limitadorum</name>
+	<description>Sistema de gestion de usuarios y roles - Universidad de Mendoza</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -63,6 +63,16 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
