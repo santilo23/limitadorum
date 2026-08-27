@@ -21,10 +21,6 @@ class UserData {
     - String phoneNumber
 }
 
-note bottom of UserData
-  Pendiente de implementacion.
-end note
-
 User "1" --* "1" UserData
 User "n" -- "m" Role
 @enduml

@@ -161,18 +161,28 @@ classDiagram
         Long id
         String description
     }
+    class UserData {
+        Long id
+        String firstName
+        String lastName
+        String address
+        String phoneNumber
+    }
     User "n" -- "m" Role
+    User "1" *-- "1" UserData
 ```
 
 - **`User`** → tabla `users`. `username` es único y obligatorio; `email` es
   obligatorio.
 - **`Role`** → tabla `role`. `description` es única y obligatoria.
+- **`UserData`** → tabla `user_data`. Guarda los datos personales del usuario.
+  Es una **composición**: su ciclo de vida está atado al de `User`, así que se
+  persiste y se elimina en cascada junto con él.
 - La relación **muchos a muchos** se materializa en la tabla intermedia
   `user_roles` (`user_id`, `role_id`). `User` es el lado propietario de la
   relación; `Role` es el lado inverso (`mappedBy = "roles"`).
 
-El diagrama de clases completo, incluida la entidad `UserData` todavía no
-implementada, está en
+El diagrama de clases completo está en
 [`docs/diagrama_usuario.puml`](docs/diagrama_usuario.puml). Para renderizarlo
 sin instalar PlantUML:
 
@@ -210,7 +220,7 @@ src/main/java/ar/edu/um/limitadorum/
 - [x] Configuración de conexión a PostgreSQL
 - [x] Base de datos containerizada con Docker Compose
 - [x] Tests de repositorio
-- [ ] Entidad `UserData` (datos personales del usuario)
+- [x] Entidad `UserData` (datos personales del usuario)
 - [ ] Capa de servicios
 - [ ] Endpoints REST
 - [ ] Integración continua

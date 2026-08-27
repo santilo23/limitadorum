@@ -7,7 +7,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.HashSet;
 import java.util.Set;
@@ -35,5 +37,19 @@ public class User {
 			joinColumns = @JoinColumn(name = "user_id"),
 			inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Set<Role> roles = new HashSet<>();
+
+	@OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+	private UserData userData;
+
+	/**
+	 * Asigna los datos personales manteniendo sincronizados ambos lados de la
+	 * relacion. Lombok no genera este setter porque ya esta declarado aca.
+	 */
+	public void setUserData(UserData userData) {
+		if (userData != null) {
+			userData.setUser(this);
+		}
+		this.userData = userData;
+	}
 
 }
