@@ -32,12 +32,10 @@ objetivo de servir como base para un sistema de control de acceso y permisos.
   winget install EclipseAdoptium.Temurin.25.JDK
   ```
 
-- **PostgreSQL** corriendo, con una base creada para la aplicación. No hace
-  falta para correr los tests: usan H2 embebida.
-
-  ```sql
-  CREATE DATABASE limitadorum;
-  ```
+- **Docker** y **Docker Compose**, para levantar la base de datos. No hace falta
+  instalar PostgreSQL en el sistema: corre en un contenedor (ver
+  [Base de datos](#base-de-datos)). Tampoco hace falta para correr los tests,
+  que usan H2 embebida.
 
 No hace falta instalar Maven: el repositorio incluye el *Maven Wrapper*
 (`mvnw` / `mvnw.cmd`), que descarga la versión correcta la primera vez.
@@ -56,15 +54,66 @@ puede sobreescribirse por variables de entorno, sin tocar el repositorio:
 | `DB_USER` | `postgres` | Usuario de la base |
 | `DB_PASSWORD` | `postgres` | Contraseña del usuario |
 
+Las mismas variables las consume `docker-compose.yml`, así que la aplicación y
+el contenedor se configuran desde un único lugar. Copí `.env.example` a `.env`
+y ajustá los valores; ese archivo está en `.gitignore` y no se versiona.
+
+```bash
+cp .env.example .env
+```
+
 El esquema se genera automáticamente con `spring.jpa.hibernate.ddl-auto: update`.
 Es cómodo para desarrollo, pero **no es apto para producción**: en un entorno
 real corresponde usar migraciones versionadas (Flyway o Liquibase).
 
 ---
 
+## Base de datos
+
+PostgreSQL corre en un contenedor Docker definido en
+[`docker-compose.yml`](docker-compose.yml). Para levantarlo:
+
+```bash
+docker compose up -d
+```
+
+La base `limitadorum` se crea sola en el primer arranque. El contenedor tiene un
+*healthcheck* con `pg_isready`, así que podés verificar que esté listo con:
+
+```bash
+docker compose ps
+```
+
+Debería figurar como `Up (healthy)`.
+
+| Comando | Qué hace |
+|---|---|
+| `docker compose up -d` | Levanta la base en segundo plano |
+| `docker compose ps` | Muestra el estado y el healthcheck |
+| `docker compose logs -f db` | Sigue los logs de PostgreSQL |
+| `docker compose stop` | Detiene el contenedor conservando los datos |
+| `docker compose down` | Elimina el contenedor conservando los datos |
+| `docker compose down -v` | Elimina el contenedor **y borra los datos** |
+
+Para abrir una consola `psql` contra el contenedor:
+
+```bash
+docker exec -it limitadorum-db psql -U postgres -d limitadorum
+```
+
+Los datos persisten en el volumen `postgres_data`, así que sobreviven a
+`docker compose down`. Solo se pierden con `docker compose down -v`.
+
+> **Si ya tenés PostgreSQL instalado en el sistema**, va a ocupar el puerto 5432
+> y el contenedor no va a poder mapearlo. Detené el servicio local, o cambiá
+> `DB_PORT` en el `.env` a otro puerto (por ejemplo `5433`) y actualizá `DB_URL`
+> en consecuencia.
+
+---
+
 ## Cómo levantar el proyecto
 
-Desde Git Bash o WSL:
+Con la base levantada (`docker compose up -d`), desde Git Bash o WSL:
 
 ```bash
 ./mvnw spring-boot:run
@@ -148,6 +197,7 @@ src/main/java/ar/edu/um/limitadorum/
 - [x] Entidades `User` y `Role` con relación muchos a muchos
 - [x] Repositorios Spring Data JPA
 - [x] Configuración de conexión a PostgreSQL
+- [x] Base de datos containerizada con Docker Compose
 - [ ] Tests de repositorio
 - [ ] Entidad `UserData` (datos personales del usuario)
 - [ ] Capa de servicios
