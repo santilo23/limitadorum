@@ -198,7 +198,7 @@ src/main/java/ar/edu/um/limitadorum/
 - [x] Repositorios Spring Data JPA
 - [x] Configuración de conexión a PostgreSQL
 - [x] Base de datos containerizada con Docker Compose
-- [ ] Tests de repositorio
+- [x] Tests de repositorio
 - [ ] Entidad `UserData` (datos personales del usuario)
 - [ ] Capa de servicios
 - [ ] Endpoints REST
