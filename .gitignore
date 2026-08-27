@@ -34,3 +34,6 @@ build/
 
 ### Environment ###
 .env
+
+### PlantUML ###
+docs/*.png

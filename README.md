@@ -171,6 +171,17 @@ classDiagram
   `user_roles` (`user_id`, `role_id`). `User` es el lado propietario de la
   relación; `Role` es el lado inverso (`mappedBy = "roles"`).
 
+El diagrama de clases completo, incluida la entidad `UserData` todavía no
+implementada, está en
+[`docs/diagrama_usuario.puml`](docs/diagrama_usuario.puml). Para renderizarlo
+sin instalar PlantUML:
+
+```bash
+docker run --rm -i plantuml/plantuml -tpng -pipe < docs/diagrama_usuario.puml > docs/diagrama_usuario.png
+```
+
+En VS Code, la extensión *PlantUML* lo previsualiza con `Alt+D`.
+
 ---
 
 ## Estructura del proyecto

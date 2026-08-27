@@ -1,0 +1,30 @@
+@startuml
+title Modelo de datos - limitadorum
+
+class User {
+    - Long id
+    - String username
+    - String email
+    - Boolean active
+}
+
+class Role {
+    - Long id
+    - String description
+}
+
+class UserData {
+    - Long id
+    - String firstName
+    - String lastName
+    - String address
+    - String phoneNumber
+}
+
+note bottom of UserData
+  Pendiente de implementacion.
+end note
+
+User "1" --* "1" UserData
+User "n" -- "m" Role
+@enduml
