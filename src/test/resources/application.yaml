@@ -1,0 +1,12 @@
+# Configuracion exclusiva de tests: sobreescribe el datasource de PostgreSQL
+# por una base H2 embebida, para que la suite corra sin dependencias externas.
+spring:
+  datasource:
+    url: jdbc:h2:mem:limitadorum;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
