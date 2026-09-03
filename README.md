@@ -32,10 +32,9 @@ objetivo de servir como base para un sistema de control de acceso y permisos.
   winget install EclipseAdoptium.Temurin.25.JDK
   ```
 
-- **Docker** y **Docker Compose**, para levantar la base de datos. No hace falta
-  instalar PostgreSQL en el sistema: corre en un contenedor (ver
-  [Base de datos](#base-de-datos)). Tampoco hace falta para correr los tests,
-  que usan H2 embebida.
+- **PostgreSQL** instalado en el sistema (puerto 5432) y/o **Docker** con
+  **Docker Compose** (puerto 5433). Ver [Base de datos](#base-de-datos). Para
+  correr los tests no hace falta ninguno de los dos: usan H2 embebida.
 
 No hace falta instalar Maven: el repositorio incluye el *Maven Wrapper*
 (`mvnw` / `mvnw.cmd`), que descarga la versión correcta la primera vez.
@@ -44,19 +43,33 @@ No hace falta instalar Maven: el repositorio incluye el *Maven Wrapper*
 
 ## Configuración
 
-La conexión a la base se define en
-[`src/main/resources/application.yaml`](src/main/resources/application.yaml) y
-puede sobreescribirse por variables de entorno, sin tocar el repositorio:
+La aplicación usa **perfiles de Spring** para elegir contra qué base de datos
+trabaja. Se definen en
+[`src/main/resources/application.yaml`](src/main/resources/application.yaml):
 
-| Variable | Default | Descripción |
-|---|---|---|
-| `DB_URL` | `jdbc:postgresql://localhost:5432/limitadorum` | URL JDBC de la base |
-| `DB_USER` | `postgres` | Usuario de la base |
-| `DB_PASSWORD` | `postgres` | Contraseña del usuario |
+| Perfil | Puerto | Base | Dónde corre |
+|---|---|---|---|
+| `dev` (por defecto) | 5432 | `USERS_AUTH_DEV` | PostgreSQL del sistema, administrado con pgAdmin |
+| `prod` | 5432 | `USERS_AUTH` | PostgreSQL del sistema, administrado con pgAdmin |
+| `docker` | 5433 | `USERS_AUTH_DEV` | Contenedor de `docker-compose.yml` |
 
-Las mismas variables las consume `docker-compose.yml`, así que la aplicación y
-el contenedor se configuran desde un único lugar. Copí `.env.example` a `.env`
-y ajustá los valores; ese archivo está en `.gitignore` y no se versiona.
+Si no se indica ninguno, se activa `dev`. Para elegir otro:
+
+```bash
+./mvnw spring-boot:run -Dspring-boot.run.profiles=docker
+```
+
+Cualquier perfil admite sobreescribir la conexión por variables de entorno, sin
+tocar el repositorio:
+
+| Variable | Descripción |
+|---|---|
+| `DB_URL` | URL JDBC completa |
+| `DB_USER` | Usuario de la base |
+| `DB_PASSWORD` | Contraseña del usuario |
+
+Para el contenedor, copiá `.env.example` a `.env` y ajustá los valores. Ese
+archivo está en `.gitignore` y no se versiona.
 
 ```bash
 cp .env.example .env
@@ -66,12 +79,25 @@ El esquema se genera automáticamente con `spring.jpa.hibernate.ddl-auto: update
 Es cómodo para desarrollo, pero **no es apto para producción**: en un entorno
 real corresponde usar migraciones versionadas (Flyway o Liquibase).
 
+> **Nota sobre los nombres en mayúsculas.** PostgreSQL convierte los
+> identificadores a minúsculas salvo que se los escriba entre comillas dobles.
+> Las bases `USERS_AUTH_DEV` y `USERS_AUTH` se crean entrecomilladas, así que el
+> nombre queda literalmente en mayúsculas y hay que respetarlo tal cual en la
+> URL JDBC y en cualquier `psql -d`.
+
 ---
 
 ## Base de datos
 
-PostgreSQL corre en un contenedor Docker definido en
-[`docker-compose.yml`](docker-compose.yml). Para levantarlo:
+El proyecto puede trabajar contra dos instancias de PostgreSQL:
+
+- La **instalada en el sistema**, en el puerto **5432**, que se administra con
+  pgAdmin. Es la que usan los perfiles `dev` y `prod`.
+- La del **contenedor Docker** definido en
+  [`docker-compose.yml`](docker-compose.yml), mapeada al puerto **5433** del
+  host para no chocar con la anterior. Es la que usa el perfil `docker`.
+
+Para levantar el contenedor:
 
 ```bash
 docker compose up -d
@@ -98,16 +124,19 @@ Debería figurar como `Up (healthy)`.
 Para abrir una consola `psql` contra el contenedor:
 
 ```bash
-docker exec -it limitadorum-db psql -U postgres -d limitadorum
+docker exec -it limitadorum-db psql -U postgres -d USERS_AUTH_DEV
 ```
 
 Los datos persisten en el volumen `postgres_data`, así que sobreviven a
 `docker compose down`. Solo se pierden con `docker compose down -v`.
 
-> **Si ya tenés PostgreSQL instalado en el sistema**, va a ocupar el puerto 5432
-> y el contenedor no va a poder mapearlo. Detené el servicio local, o cambiá
-> `DB_PORT` en el `.env` a otro puerto (por ejemplo `5433`) y actualizá `DB_URL`
-> en consecuencia.
+Las bases `USERS_AUTH_DEV` y `USERS_AUTH` del PostgreSQL del sistema se crean
+desde pgAdmin, o por línea de comandos:
+
+```sql
+CREATE DATABASE "USERS_AUTH_DEV";
+CREATE DATABASE "USERS_AUTH";
+```
 
 ---
 

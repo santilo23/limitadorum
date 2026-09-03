@@ -4,15 +4,17 @@ services:
     container_name: limitadorum-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${DB_NAME:-limitadorum}
+      POSTGRES_DB: ${DB_NAME:-USERS_AUTH_DEV}
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
-      - "${DB_PORT:-5432}:5432"
+      # 5433 en el host: el 5432 queda para el PostgreSQL instalado en el
+      # sistema, que se administra con pgAdmin.
+      - "${DB_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-limitadorum}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
       interval: 10s
       timeout: 5s
       retries: 5

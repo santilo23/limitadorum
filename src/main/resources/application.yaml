@@ -1,11 +1,9 @@
 spring:
   application:
     name: limitadorum
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/limitadorum}
-    username: ${DB_USER:postgres}
-    password: ${DB_PASSWORD:postgres}
-    driver-class-name: org.postgresql.Driver
+  profiles:
+    # Perfil activo si no se indica otro por linea de comandos.
+    default: dev
   jpa:
     hibernate:
       ddl-auto: update
@@ -13,3 +11,39 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+---
+# PostgreSQL instalado en el sistema, administrado con pgAdmin (puerto 5432).
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/USERS_AUTH_DEV}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+---
+# Base de produccion, tambien en el PostgreSQL del sistema (puerto 5432).
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/USERS_AUTH}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+---
+# Contenedor de docker-compose (puerto 5433 en el host).
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/USERS_AUTH_DEV}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
