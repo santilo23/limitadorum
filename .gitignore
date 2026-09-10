@@ -37,3 +37,8 @@ build/
 
 ### PlantUML ###
 docs/*.png
+
+### Python ###
+__pycache__/
+.venv/
+*.csv

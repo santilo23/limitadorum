@@ -6,6 +6,8 @@ localResources:
   collections:
     - ../limitadorum.postman_collection.json
 
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+
 cloudResources:
   collections:
     ../postman/collections/limitadorum - CRUD: 79867eae-ebb4-4d4f-83d5-af0c87d129b3

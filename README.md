@@ -314,7 +314,27 @@ src/main/java/ar/edu/um/limitadorum/
 - [x] Capa de servicios
 - [x] Endpoints REST (CRUD de las tres entidades)
 - [x] Colección de Postman para probar la API
+- [x] Carga masiva de 1.000.000 de usuarios
 - [ ] Integración continua
+
+---
+
+## Carga masiva de datos
+
+El repositorio incluye una herramienta para poblar la base con **1.000.000 de
+usuarios ficticios**, en [`scripts/bulk_load/`](scripts/bulk_load/). Está
+escrita en Python y usa `COPY`, el mecanismo de carga masiva de PostgreSQL.
+
+```bash
+cd scripts/bulk_load
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements.txt
+.venv\Scripts\python.exe bulk_load.py --fast
+```
+
+Carga el millón de usuarios, con sus datos personales y sus roles, en unos
+**68 segundos**. Los detalles del enfoque y las mediciones están en el
+[README del script](scripts/bulk_load/README.md).
 
 ---
 
