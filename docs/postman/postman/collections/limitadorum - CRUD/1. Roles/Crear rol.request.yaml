@@ -1,0 +1,20 @@
+$kind: http-request
+url: "{{baseUrl}}/roles"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "description": "Administrador"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Responde 201 Created', function () { pm.response.to.have.status(201); });
+      var body = pm.response.json();
+      pm.test('Genera un id', function () { pm.expect(body.id).to.not.be.null; });
+      pm.collectionVariables.set('roleId', body.id);
+    language: text/javascript
+order: 1000

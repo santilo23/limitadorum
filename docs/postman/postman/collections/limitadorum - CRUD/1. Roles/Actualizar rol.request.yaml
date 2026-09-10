@@ -1,0 +1,18 @@
+$kind: http-request
+url: "{{baseUrl}}/roles/{{roleId}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "description": "Supervisor"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Responde 200 OK', function () { pm.response.to.have.status(200); });
+      pm.test('Actualiza la descripcion', function () { pm.expect(pm.response.json().description).to.eql('Supervisor'); });
+    language: text/javascript
+order: 4000

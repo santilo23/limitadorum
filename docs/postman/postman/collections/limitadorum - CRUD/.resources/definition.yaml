@@ -1,0 +1,12 @@
+$kind: collection
+description: |-
+  Coleccion de pruebas del CRUD de User, Role y UserData.
+
+  Requiere la aplicacion corriendo en http://localhost:8080 (./mvnw spring-boot:run o .\boot.ps1).
+
+  Las carpetas estan ordenadas para poder ejecutarlas de corrido con el Collection Runner: Roles crea el rol, Users crea el usuario asignandole ese rol, UserData le agrega los datos personales, y Limpieza borra todo en el orden inverso. Los ids se guardan automaticamente en las variables roleId, userId y userDataId.
+variables:
+  baseUrl: http://localhost:8080/api
+  roleId: ""
+  userId: ""
+  userDataId: ""

@@ -1,0 +1,424 @@
+{
+  "info": {
+    "name": "limitadorum - CRUD",
+    "description": "Coleccion de pruebas del CRUD de User, Role y UserData.\n\nRequiere la aplicacion corriendo en http://localhost:8080 (./mvnw spring-boot:run o .\\boot.ps1).\n\nLas carpetas estan ordenadas para poder ejecutarlas de corrido con el Collection Runner: Roles crea el rol, Users crea el usuario asignandole ese rol, UserData le agrega los datos personales, y Limpieza borra todo en el orden inverso. Los ids se guardan automaticamente en las variables roleId, userId y userDataId.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080/api" },
+    { "key": "roleId", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "userDataId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Roles",
+      "item": [
+        {
+          "name": "Crear rol",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var body = pm.response.json();",
+                  "pm.test('Genera un id', function () { pm.expect(body.id).to.not.be.null; });",
+                  "pm.collectionVariables.set('roleId', body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Administrador\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] }
+          }
+        },
+        {
+          "name": "Listar roles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Devuelve un arreglo', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/roles", "host": ["{{baseUrl}}"], "path": ["roles"] }
+          }
+        },
+        {
+          "name": "Obtener rol por id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Responde 200 OK', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar rol",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Actualiza la descripcion', function () { pm.expect(pm.response.json().description).to.eql('Supervisor'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Supervisor\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Usuarios",
+      "item": [
+        {
+          "name": "Crear usuario (con rol)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var body = pm.response.json();",
+                  "pm.test('Tiene el rol asignado', function () { pm.expect(body.roles).to.have.lengthOf(1); });",
+                  "pm.collectionVariables.set('userId', body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"jperez\",\n  \"email\": \"jperez@um.edu.ar\",\n  \"active\": true,\n  \"roles\": [\n    { \"id\": {{roleId}} }\n  ]\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Listar usuarios",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Responde 200 OK', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/users", "host": ["{{baseUrl}}"], "path": ["users"] }
+          }
+        },
+        {
+          "name": "Obtener usuario por id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Responde 200 OK', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar usuario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Queda desactivado', function () { pm.expect(pm.response.json().active).to.eql(false); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"jperez\",\n  \"email\": \"juan.perez@um.edu.ar\",\n  \"active\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Datos personales",
+      "item": [
+        {
+          "name": "Crear datos personales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201 Created', function () { pm.response.to.have.status(201); });",
+                  "var body = pm.response.json();",
+                  "pm.test('Queda asociado al usuario', function () { pm.expect(Number(body.userId)).to.eql(Number(pm.collectionVariables.get('userId'))); });",
+                  "pm.collectionVariables.set('userDataId', body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Juan\",\n  \"lastName\": \"Perez\",\n  \"address\": \"San Martin 123\",\n  \"phoneNumber\": \"2611234567\",\n  \"user\": { \"id\": {{userId}} }\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/users-data", "host": ["{{baseUrl}}"], "path": ["users-data"] }
+          }
+        },
+        {
+          "name": "Listar datos personales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Responde 200 OK', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{baseUrl}}/users-data", "host": ["{{baseUrl}}"], "path": ["users-data"] }
+          }
+        },
+        {
+          "name": "Obtener datos personales por id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Responde 200 OK', function () { pm.response.to.have.status(200); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users-data/{{userDataId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users-data", "{{userDataId}}"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar datos personales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200 OK', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Actualiza el domicilio', function () { pm.expect(pm.response.json().address).to.eql('Belgrano 456'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Juan Carlos\",\n  \"lastName\": \"Perez\",\n  \"address\": \"Belgrano 456\",\n  \"phoneNumber\": \"2617654321\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users-data/{{userDataId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users-data", "{{userDataId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Errores esperados",
+      "item": [
+        {
+          "name": "Usuario inexistente devuelve 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Responde 404 Not Found', function () { pm.response.to.have.status(404); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "999999"]
+            }
+          }
+        },
+        {
+          "name": "Borrar rol inexistente devuelve 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Responde 404 Not Found', function () { pm.response.to.have.status(404); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles/999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "999999"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Limpieza",
+      "item": [
+        {
+          "name": "Eliminar datos personales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Responde 204 No Content', function () { pm.response.to.have.status(204); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users-data/{{userDataId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users-data", "{{userDataId}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar usuario",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Responde 204 No Content', function () { pm.response.to.have.status(204); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar rol",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Responde 204 No Content', function () { pm.response.to.have.status(204); });"]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles/{{roleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["roles", "{{roleId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

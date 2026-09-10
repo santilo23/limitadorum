@@ -8,6 +8,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -38,9 +41,22 @@ public class UserData {
 
 	private String phoneNumber;
 
+	/**
+	 * WRITE_ONLY: se acepta al crear o actualizar (para indicar a que usuario
+	 * pertenecen los datos), pero no se serializa en las respuestas. Sin esto,
+	 * User -> userData -> user -> ... entraria en recursion infinita al generar
+	 * el JSON.
+	 */
 	@OneToOne
 	@JoinColumn(name = "user_id", nullable = false, unique = true)
+	@JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
 	private User user;
+
+	/** Expone solo el id del usuario, en lugar del objeto completo. */
+	@JsonProperty("userId")
+	public Long getUserId() {
+		return user != null ? user.getId() : null;
+	}
 
 	public UserData(String firstName, String lastName, String address, String phoneNumber) {
 		this.firstName = firstName;

@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/users-data"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "firstName": "Juan",
+      "lastName": "Perez",
+      "address": "San Martin 123",
+      "phoneNumber": "2611234567",
+      "user": { "id": {{userId}} }
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Responde 201 Created', function () { pm.response.to.have.status(201); });
+      var body = pm.response.json();
+      pm.test('Queda asociado al usuario', function () { pm.expect(Number(body.userId)).to.eql(Number(pm.collectionVariables.get('userId'))); });
+      pm.collectionVariables.set('userDataId', body.id);
+    language: text/javascript
+order: 1000

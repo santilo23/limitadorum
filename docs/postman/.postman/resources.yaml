@@ -1,0 +1,11 @@
+# Use this workspace to collaborate
+workspace:
+  id: 7efd7d6e-861f-4652-840e-14e72aa235f4
+
+localResources:
+  collections:
+    - ../limitadorum.postman_collection.json
+
+cloudResources:
+  collections:
+    ../postman/collections/limitadorum - CRUD: 79867eae-ebb4-4d4f-83d5-af0c87d129b3

@@ -1,0 +1,10 @@
+$kind: http-request
+url: "{{baseUrl}}/roles"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Responde 200 OK', function () { pm.response.to.have.status(200); });
+      pm.test('Devuelve un arreglo', function () { pm.expect(pm.response.json()).to.be.an('array'); });
+    language: text/javascript
+order: 2000

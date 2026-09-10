@@ -223,6 +223,57 @@ En VS Code, la extensión *PlantUML* lo previsualiza con `Alt+D`.
 
 ---
 
+## API REST
+
+Todos los endpoints cuelgan de `/api` y siguen el mismo patrón para las tres
+entidades:
+
+| Método | Ruta | Respuesta |
+|---|---|---|
+| `GET` | `/api/users` | `200` con la lista |
+| `GET` | `/api/users/{id}` | `200`, o `404` si no existe |
+| `POST` | `/api/users` | `201` con la entidad creada |
+| `PUT` | `/api/users/{id}` | `200` con la entidad actualizada, o `404` |
+| `DELETE` | `/api/users/{id}` | `204` sin contenido, o `404` |
+
+Lo mismo para `/api/roles` y `/api/users-data`.
+
+### Colección de Postman
+
+En [`docs/postman/`](docs/postman/limitadorum.postman_collection.json) hay una
+colección lista para importar (*Import → File*). Está ordenada para poder
+ejecutarla de corrido con el **Collection Runner**: crea un rol, después un
+usuario con ese rol, le agrega los datos personales, comprueba los 404 y
+finalmente borra todo. Los ids se van guardando solos en las variables
+`roleId`, `userId` y `userDataId`.
+
+También se puede correr desde la terminal, con la aplicación levantada:
+
+```bash
+npx newman run docs/postman/limitadorum.postman_collection.json
+```
+
+### Referencias entre entidades
+
+Para asignar roles a un usuario, o para indicar de qué usuario son unos datos
+personales, alcanza con mandar el id:
+
+```json
+{
+  "username": "jperez",
+  "email": "jperez@um.edu.ar",
+  "active": true,
+  "roles": [{ "id": 1 }]
+}
+```
+
+Las relaciones bidireccionales no se serializan de vuelta (`Role.users` lleva
+`@JsonIgnore` y `UserData.user` es de solo escritura), porque si no Jackson
+entraría en recursión infinita al generar el JSON. En su lugar, `UserData`
+expone el campo de solo lectura `userId`.
+
+---
+
 ## Estructura del proyecto
 
 Arquitectura clásica de tres capas de Spring Boot:
@@ -230,14 +281,24 @@ Arquitectura clásica de tres capas de Spring Boot:
 ```
 src/main/java/ar/edu/um/limitadorum/
 ├── LimitadorumApplication.java   # punto de entrada
-├── controllers/                  # capa de presentación (pendiente)
-├── services/                     # capa de negocio (pendiente)
+├── controllers/                  # capa de presentación (REST)
+│   ├── UserController.java
+│   ├── RoleController.java
+│   └── UserDataController.java
+├── services/                     # capa de negocio (interfaz + Impl)
+│   ├── UserService.java / UserServiceImpl.java
+│   ├── RoleService.java / RoleServiceImpl.java
+│   └── UserDataService.java / UserDataServiceImpl.java
 ├── domain/                       # entidades JPA
 │   ├── User.java
-│   └── Role.java
-└── repository/                   # capa de persistencia
-    ├── UserRepository.java
-    └── RoleRepository.java
+│   ├── Role.java
+│   └── UserData.java
+├── repository/                   # capa de persistencia
+│   ├── UserRepository.java
+│   ├── RoleRepository.java
+│   └── UserDataRepository.java
+└── exception/
+    └── ResourceNotFoundException.java
 ```
 
 ---
@@ -250,8 +311,9 @@ src/main/java/ar/edu/um/limitadorum/
 - [x] Base de datos containerizada con Docker Compose
 - [x] Tests de repositorio
 - [x] Entidad `UserData` (datos personales del usuario)
-- [ ] Capa de servicios
-- [ ] Endpoints REST
+- [x] Capa de servicios
+- [x] Endpoints REST (CRUD de las tres entidades)
+- [x] Colección de Postman para probar la API
 - [ ] Integración continua
 
 ---
