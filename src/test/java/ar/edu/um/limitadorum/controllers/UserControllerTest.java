@@ -19,6 +19,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -49,15 +53,20 @@ class UserControllerTest {
 	}
 
 	@Test
-	void findAll_shouldReturnAllUsers() throws Exception {
-		when(userService.findAll())
-				.thenReturn(List.of(user(1L, "jperez", "jperez@um.edu.ar"), user(2L, "asmith", "asmith@um.edu.ar")));
+	void findAll_shouldReturnDefaultPage() throws Exception {
+		Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Direction.ASC, "id"));
+		when(userService.findPaged(any(Pageable.class))).thenReturn(new PageImpl<>(
+				List.of(user(1L, "jperez", "jperez@um.edu.ar"), user(2L, "asmith", "asmith@um.edu.ar")),
+				pageable, 2L));
 
 		mockMvc.perform(get("/api/users"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.length()").value(2))
-				.andExpect(jsonPath("$[0].username").value("jperez"))
-				.andExpect(jsonPath("$[1].email").value("asmith@um.edu.ar"));
+				.andExpect(jsonPath("$.content.length()").value(2))
+				.andExpect(jsonPath("$.content[0].username").value("jperez"))
+				.andExpect(jsonPath("$.content[1].email").value("asmith@um.edu.ar"))
+				.andExpect(jsonPath("$.page").value(0))
+				.andExpect(jsonPath("$.totalElements").value(2))
+				.andExpect(jsonPath("$.totalPages").value(1));
 	}
 
 	@Test
