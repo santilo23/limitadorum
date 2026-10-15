@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ar.edu.um.limitadorum.domain.UserData;
+import ar.edu.um.limitadorum.dto.UserDataDto;
+import ar.edu.um.limitadorum.mapper.UserDataMapper;
 import ar.edu.um.limitadorum.services.UserDataService;
 
 @RestController
@@ -21,31 +22,36 @@ import ar.edu.um.limitadorum.services.UserDataService;
 public class UserDataController {
 
 	private final UserDataService userDataService;
+	private final UserDataMapper userDataMapper;
 
-	public UserDataController(UserDataService userDataService) {
+	public UserDataController(UserDataService userDataService, UserDataMapper userDataMapper) {
 		this.userDataService = userDataService;
+		this.userDataMapper = userDataMapper;
 	}
 
 	@GetMapping
-	public ResponseEntity<List<UserData>> findAll() {
-		return ResponseEntity.ok(userDataService.findAll());
+	public ResponseEntity<List<UserDataDto>> findAll() {
+		return ResponseEntity.ok(userDataMapper.toDtoList(userDataService.findAll()));
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<UserData> findById(@PathVariable Long id) {
+	public ResponseEntity<UserDataDto> findById(@PathVariable Long id) {
 		return userDataService.findById(id)
+				.map(userDataMapper::toDto)
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
 	}
 
 	@PostMapping
-	public ResponseEntity<UserData> save(@RequestBody UserData userData) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(userDataService.save(userData));
+	public ResponseEntity<UserDataDto> save(@RequestBody UserDataDto dto) {
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(userDataMapper.toDto(userDataService.save(userDataMapper.toEntity(dto))));
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<UserData> update(@PathVariable Long id, @RequestBody UserData userData) {
-		return ResponseEntity.ok(userDataService.update(id, userData));
+	public ResponseEntity<UserDataDto> update(@PathVariable Long id, @RequestBody UserDataDto dto) {
+		return ResponseEntity.ok(
+				userDataMapper.toDto(userDataService.update(id, userDataMapper.toEntity(dto))));
 	}
 
 	@DeleteMapping("/{id}")

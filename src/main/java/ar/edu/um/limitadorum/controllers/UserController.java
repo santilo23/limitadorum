@@ -13,7 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ar.edu.um.limitadorum.domain.User;
+import ar.edu.um.limitadorum.dto.UserDto;
+import ar.edu.um.limitadorum.mapper.UserMapper;
 import ar.edu.um.limitadorum.services.UserService;
 
 @RestController
@@ -21,31 +22,35 @@ import ar.edu.um.limitadorum.services.UserService;
 public class UserController {
 
 	private final UserService userService;
+	private final UserMapper userMapper;
 
-	public UserController(UserService userService) {
+	public UserController(UserService userService, UserMapper userMapper) {
 		this.userService = userService;
+		this.userMapper = userMapper;
 	}
 
 	@GetMapping
-	public ResponseEntity<List<User>> findAll() {
-		return ResponseEntity.ok(userService.findAll());
+	public ResponseEntity<List<UserDto>> findAll() {
+		return ResponseEntity.ok(userMapper.toDtoList(userService.findAll()));
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<User> findById(@PathVariable Long id) {
+	public ResponseEntity<UserDto> findById(@PathVariable Long id) {
 		return userService.findById(id)
+				.map(userMapper::toDto)
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
 	}
 
 	@PostMapping
-	public ResponseEntity<User> save(@RequestBody User user) {
-		return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(user));
+	public ResponseEntity<UserDto> save(@RequestBody UserDto dto) {
+		return ResponseEntity.status(HttpStatus.CREATED)
+				.body(userMapper.toDto(userService.save(userMapper.toEntity(dto))));
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User user) {
-		return ResponseEntity.ok(userService.update(id, user));
+	public ResponseEntity<UserDto> update(@PathVariable Long id, @RequestBody UserDto dto) {
+		return ResponseEntity.ok(userMapper.toDto(userService.update(id, userMapper.toEntity(dto))));
 	}
 
 	@DeleteMapping("/{id}")
