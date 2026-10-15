@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import ar.edu.um.limitadorum.dto.PagedResponse;
+import ar.edu.um.limitadorum.dto.UserDetail;
 import ar.edu.um.limitadorum.dto.UserDto;
 import ar.edu.um.limitadorum.mapper.UserMapper;
 import ar.edu.um.limitadorum.services.UserService;
@@ -57,6 +58,11 @@ public class UserController {
 				.map(userMapper::toDto)
 				.map(ResponseEntity::ok)
 				.orElse(ResponseEntity.notFound().build());
+	}
+
+	@GetMapping("/{id}/detail")
+	public ResponseEntity<UserDetail> getUserDetail(@PathVariable Long id) {
+		return ResponseEntity.ok(userService.getUserDetail(id));
 	}
 
 	@PostMapping

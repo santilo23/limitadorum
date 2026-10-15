@@ -62,4 +62,48 @@ public class User {
 		this.userData = userData;
 	}
 
+	/**
+	 * Genera una vista inmutable de detalles del usuario para consultas seguras (User Detail).
+	 * Aplica encapsulamiento y nunca expone contraseñas ni hashes.
+	 */
+	public ar.edu.um.limitadorum.dto.UserDetail getDetail() {
+		validateRequiredFieldsForDetail();
+
+		String fullName = this.userData != null ? this.userData.getFullName() : null;
+		String phoneNumber = this.userData != null ? this.userData.getPhoneNumber() : null;
+		String address = this.userData != null ? this.userData.getAddress() : null;
+
+		java.util.Set<String> roleDescriptions = extractRoleDescriptions();
+
+		return new ar.edu.um.limitadorum.dto.UserDetail(
+				this.id,
+				this.username,
+				this.email,
+				fullName,
+				phoneNumber,
+				address,
+				roleDescriptions,
+				Boolean.TRUE.equals(this.active)
+		);
+	}
+
+	private void validateRequiredFieldsForDetail() {
+		if (this.username == null || this.username.isBlank()) {
+			throw new IllegalStateException("El usuario debe tener un username válido para generar el detalle");
+		}
+		if (this.email == null || this.email.isBlank()) {
+			throw new IllegalStateException("El usuario debe tener un email válido para generar el detalle");
+		}
+	}
+
+	private java.util.Set<String> extractRoleDescriptions() {
+		if (this.roles == null || this.roles.isEmpty()) {
+			return java.util.Collections.emptySet();
+		}
+		return this.roles.stream()
+				.filter(java.util.Objects::nonNull)
+				.map(Role::getDescription)
+				.filter(java.util.Objects::nonNull)
+				.collect(java.util.stream.Collectors.toUnmodifiableSet());
+	}
 }

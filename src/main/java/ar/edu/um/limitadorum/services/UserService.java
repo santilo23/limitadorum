@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import ar.edu.um.limitadorum.domain.User;
+import ar.edu.um.limitadorum.dto.UserDetail;
 
 public interface UserService {
 
@@ -15,6 +16,8 @@ public interface UserService {
 	Page<User> findPaged(Pageable pageable);
 
 	Optional<User> findById(Long id);
+
+	UserDetail getUserDetail(Long id);
 
 	User save(User user);
 

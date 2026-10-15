@@ -88,6 +88,30 @@ class UserControllerTest {
 	}
 
 	@Test
+	void getUserDetail_whenUserExists_shouldReturn200AndDetail() throws Exception {
+		ar.edu.um.limitadorum.dto.UserDetail detail = new ar.edu.um.limitadorum.dto.UserDetail(
+				1L, "jperez", "jperez@um.edu.ar", "Juan Perez",
+				"+5492615551234", "Calle 123", java.util.Set.of("USER"), true);
+		when(userService.getUserDetail(1L)).thenReturn(detail);
+
+		mockMvc.perform(get("/api/users/1/detail"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(1))
+				.andExpect(jsonPath("$.username").value("jperez"))
+				.andExpect(jsonPath("$.fullName").value("Juan Perez"))
+				.andExpect(jsonPath("$.roles[0]").value("USER"));
+	}
+
+	@Test
+	void getUserDetail_whenUserDoesNotExist_shouldReturnNotFound() throws Exception {
+		when(userService.getUserDetail(99L))
+				.thenThrow(new ar.edu.um.limitadorum.exception.ResourceNotFoundException("User", 99L));
+
+		mockMvc.perform(get("/api/users/99/detail"))
+				.andExpect(status().isNotFound());
+	}
+
+	@Test
 	void save_shouldReturnCreatedUser() throws Exception {
 		when(userService.save(any(User.class))).thenReturn(user(1L, "nuevo", "nuevo@um.edu.ar"));
 

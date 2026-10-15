@@ -56,6 +56,24 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public ar.edu.um.limitadorum.dto.UserDetail getUserDetail(Long id) {
+		validateUserId(id);
+		return userRepository.findById(id)
+				.map(User::getDetail)
+				.orElseThrow(() -> new ResourceNotFoundException("User", id));
+	}
+
+	private void validateUserId(Long id) {
+		if (id == null) {
+			throw new IllegalArgumentException("El id no puede ser nulo");
+		}
+		if (id <= 0) {
+			throw new IllegalArgumentException("El id debe ser positivo y mayor a 0");
+		}
+	}
+
+	@Override
 	public User save(User user) {
 		user.setPassword(encodeIfNecessary(user.getPassword()));
 		user.setRoles(resolveRoles(user.getRoles()));
