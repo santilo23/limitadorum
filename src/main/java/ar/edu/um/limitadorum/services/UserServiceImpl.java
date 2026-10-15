@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import java.util.regex.Pattern;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,13 +20,19 @@ import ar.edu.um.limitadorum.repository.UserRepository;
 @Transactional
 public class UserServiceImpl implements UserService {
 
+	private static final Pattern BCRYPT_PATTERN = Pattern.compile("^\\$2[aby]\\$\\d{2}\\$.{53}$");
+
 	private final UserRepository userRepository;
 
 	private final RoleRepository roleRepository;
 
-	public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository) {
+	private final PasswordEncoder passwordEncoder;
+
+	public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository,
+			PasswordEncoder passwordEncoder) {
 		this.userRepository = userRepository;
 		this.roleRepository = roleRepository;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	@Override
@@ -41,6 +49,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User save(User user) {
+		user.setPassword(encodeIfNecessary(user.getPassword()));
 		user.setRoles(resolveRoles(user.getRoles()));
 		return userRepository.saveAndFlush(user);
 	}
@@ -58,6 +67,9 @@ public class UserServiceImpl implements UserService {
 		existing.setUsername(user.getUsername());
 		existing.setEmail(user.getEmail());
 		existing.setActive(user.getActive());
+		if (user.getPassword() != null) {
+			existing.setPassword(encodeIfNecessary(user.getPassword()));
+		}
 		if (user.getRoles() != null && !user.getRoles().isEmpty()) {
 			existing.setRoles(resolveRoles(user.getRoles()));
 		}
@@ -65,6 +77,17 @@ public class UserServiceImpl implements UserService {
 			existing.setUserData(user.getUserData());
 		}
 		return userRepository.saveAndFlush(existing);
+	}
+
+	private String encodeIfNecessary(String password) {
+		if (password == null || isAlreadyEncoded(password)) {
+			return password;
+		}
+		return passwordEncoder.encode(password);
+	}
+
+	private static boolean isAlreadyEncoded(String password) {
+		return BCRYPT_PATTERN.matcher(password).matches();
 	}
 
 	@Override
