@@ -9,6 +9,10 @@ import ar.edu.um.limitadorum.domain.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
 
+	boolean existsByUsername(String username);
+
+	boolean existsByEmail(String email);
+
 	@EntityGraph(attributePaths = "userData")
 	@Override
 	Page<User> findAll(Pageable pageable);
