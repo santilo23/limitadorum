@@ -12,6 +12,11 @@ spring:
       hibernate:
         format_sql: true
 
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 horas (ms)
+  remember-me-expiration: ${JWT_REMEMBER_ME_EXPIRATION:31536000000} # 1 año = 365 días (ms)
+
 ---
 # PostgreSQL instalado en el sistema, administrado con pgAdmin (puerto 5432).
 spring:

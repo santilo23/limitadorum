@@ -6,13 +6,36 @@ import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+	@ExceptionHandler(AuthenticationException.class)
+	public ResponseEntity<ProblemDetail> handleAuthenticationException(AuthenticationException ex,
+			HttpServletRequest request) {
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+				HttpStatus.UNAUTHORIZED,
+				"Error de usuario y/o de password."
+		);
+		problem.setTitle("Unauthorized");
+		problem.setType(URI.create("https://limitador.edu.ar/problems/invalid-credentials"));
+		if (request != null && request.getRequestURI() != null) {
+			problem.setInstance(URI.create(request.getRequestURI()));
+		}
+		return ResponseEntity
+				.status(HttpStatus.UNAUTHORIZED)
+				.contentType(MediaType.APPLICATION_PROBLEM_JSON)
+				.body(problem);
+	}
 
 	@ExceptionHandler(DuplicateUserException.class)
 	public ProblemDetail handleDuplicateUser(DuplicateUserException ex) {

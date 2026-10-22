@@ -12,7 +12,14 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.HashSet;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -20,7 +27,7 @@ import lombok.ToString;
 @Entity
 @Data
 @Table(name = "users")
-public class User {
+public class User implements UserDetails {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -105,5 +112,53 @@ public class User {
 				.map(Role::getDescription)
 				.filter(java.util.Objects::nonNull)
 				.collect(java.util.stream.Collectors.toUnmodifiableSet());
+	}
+
+	@Override
+	@JsonIgnore
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		if (this.roles == null || this.roles.isEmpty()) {
+			return Collections.emptyList();
+		}
+		return this.roles.stream()
+				.filter(Objects::nonNull)
+				.map(Role::getDescription)
+				.filter(Objects::nonNull)
+				.map(SimpleGrantedAuthority::new)
+				.toList();
+	}
+
+	@Override
+	public String getUsername() {
+		return this.username;
+	}
+
+	@Override
+	public String getPassword() {
+		return this.password;
+	}
+
+	@Override
+	@JsonIgnore
+	public boolean isAccountNonExpired() {
+		return true;
+	}
+
+	@Override
+	@JsonIgnore
+	public boolean isAccountNonLocked() {
+		return true;
+	}
+
+	@Override
+	@JsonIgnore
+	public boolean isCredentialsNonExpired() {
+		return true;
+	}
+
+	@Override
+	@JsonIgnore
+	public boolean isEnabled() {
+		return Boolean.TRUE.equals(this.active);
 	}
 }

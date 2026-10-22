@@ -18,10 +18,8 @@ param(
     [string]$DbUsername,
     [string]$DbPassword,
     [string]$DbDriver = "org.postgresql.Driver",
-    # create-drop recrea el esquema en cada arranque y lo ELIMINA al apagar la
-    # aplicacion. Para que las tablas queden visibles en pgAdmin despues de
-    # cerrar, usar "update".
-    [string]$HibernateDdlAuto = "create-drop",
+    # Para que las tablas y datos queden visibles y preservados en pgAdmin, usamos "update".
+    [string]$HibernateDdlAuto = "update",
     [string]$ShowSql = "true"
 )
 

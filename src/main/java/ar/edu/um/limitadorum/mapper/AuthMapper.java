@@ -14,6 +14,7 @@ public interface AuthMapper {
 	@Mapping(target = "roles", ignore = true)
 	@Mapping(target = "userData", ignore = true)
 	@Mapping(target = "active", ignore = true)
+	@Mapping(target = "authorities", ignore = true)
 	User toUser(RegisterRequest request);
 
 	@Mapping(target = "id", ignore = true)

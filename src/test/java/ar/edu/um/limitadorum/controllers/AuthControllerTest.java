@@ -38,6 +38,9 @@ class AuthControllerTest {
 	@MockitoBean
 	private RegistrationService registrationService;
 
+	@MockitoBean
+	private ar.edu.um.limitadorum.services.AuthService authService;
+
 	private static final String VALID_BODY = """
 			{
 			  "username": "jperez",
@@ -201,5 +204,91 @@ class AuthControllerTest {
 				.andExpect(jsonPath("$.status").value(409))
 				.andExpect(jsonPath("$.detail").value("email 'jperez@um.edu.ar' is already registered"))
 				.andExpect(jsonPath("$.field").value("email"));
+	}
+
+	@Test
+	void login_withValidCredentials_shouldReturn200AndTokenWithMessage() throws Exception {
+		String validLoginJson = """
+				{
+				  "username": "jperez",
+				  "password": "Secreto123",
+				  "rememberMe": false
+				}
+				""";
+		when(authService.login(any(ar.edu.um.limitadorum.dto.LoginRequest.class)))
+				.thenReturn(new ar.edu.um.limitadorum.dto.LoginResponse("mocked.jwt.token", "Inicio de sesión exitoso"));
+
+		mockMvc.perform(post("/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(validLoginJson))
+				.andExpect(status().isOk())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.token").value("mocked.jwt.token"))
+				.andExpect(jsonPath("$.message").value("Inicio de sesión exitoso"))
+				.andExpect(jsonPath("$.password").doesNotExist());
+	}
+
+	@Test
+	void login_withInvalidCredentials_shouldReturn401ProblemDetailRfc9457() throws Exception {
+		String invalidLoginJson = """
+				{
+				  "username": "jperez",
+				  "password": "WrongPassword"
+				}
+				""";
+		when(authService.login(any(ar.edu.um.limitadorum.dto.LoginRequest.class)))
+				.thenThrow(new org.springframework.security.authentication.BadCredentialsException("Error de usuario y/o de password."));
+
+		mockMvc.perform(post("/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(invalidLoginJson))
+				.andExpect(status().isUnauthorized())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+				.andExpect(jsonPath("$.title").value("Unauthorized"))
+				.andExpect(jsonPath("$.status").value(401))
+				.andExpect(jsonPath("$.detail").value("Error de usuario y/o de password."))
+				.andExpect(jsonPath("$.type").value("https://limitador.edu.ar/problems/invalid-credentials"))
+				.andExpect(jsonPath("$.instance").value("/auth/login"))
+				.andExpect(jsonPath("$.password").doesNotExist());
+	}
+
+	@Test
+	void login_withNonexistentUser_shouldReturnSame401ProblemDetailWithoutEnumeration() throws Exception {
+		String nonexistentUserJson = """
+				{
+				  "username": "usuario_fantasma",
+				  "password": "CualquierPassword"
+				}
+				""";
+		when(authService.login(any(ar.edu.um.limitadorum.dto.LoginRequest.class)))
+				.thenThrow(new org.springframework.security.authentication.BadCredentialsException("Error de usuario y/o de password."));
+
+		mockMvc.perform(post("/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(nonexistentUserJson))
+				.andExpect(status().isUnauthorized())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+				.andExpect(jsonPath("$.title").value("Unauthorized"))
+				.andExpect(jsonPath("$.status").value(401))
+				.andExpect(jsonPath("$.detail").value("Error de usuario y/o de password."));
+	}
+
+	@Test
+	void login_withEmptyOrBlankCredentials_shouldReturn401ProblemDetail() throws Exception {
+		String emptyCredentialsJson = """
+				{
+				  "username": "",
+				  "password": ""
+				}
+				""";
+		when(authService.login(any(ar.edu.um.limitadorum.dto.LoginRequest.class)))
+				.thenThrow(new org.springframework.security.authentication.BadCredentialsException("Error de usuario y/o de password."));
+
+		mockMvc.perform(post("/auth/login")
+						.contentType(MediaType.APPLICATION_JSON)
+						.content(emptyCredentialsJson))
+				.andExpect(status().isUnauthorized())
+				.andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+				.andExpect(jsonPath("$.detail").value("Error de usuario y/o de password."));
 	}
 }
